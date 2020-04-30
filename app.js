@@ -45,18 +45,6 @@ app.post('/uploadFile', upload.single('file'), async (req, res) => {
 
 });
 
-
-
-
-app.get('/', (req, res) => {
-    res.send({
-        'message': 'welcome to recruit boot ai'
-    })
-})
-
-
-
-
 app.listen(port, (err, res) => {
     if (err) {
         console.error(err);
