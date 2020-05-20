@@ -143,7 +143,7 @@ app.post('/uploadAws', upload.single('file'), (req, res) => {
 
 
 
-app.listen(port, (err, res) => {
+app.listen(port,'0.0.0.0' , (err, res) => {
     if (err) {
         console.error(err);
     }
