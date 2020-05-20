@@ -132,6 +132,12 @@ function uploadFileToAws(file) {
     });
 };
 
+app.get('/', (req,res)=>{
+    res.send(
+        "welcome to rekrutBot AI"
+    )
+})
+
 app.post('/uploadAws', upload.single('file'), (req, res) => {
     originalFileName = req.file.originalname;
     uploadFileToAws(req.file).then(data => {
