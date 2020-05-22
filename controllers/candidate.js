@@ -1,6 +1,8 @@
 const candidate = require('../models/candidate.model');
-const AWS = require('aws-sdk');
-const fs = require('fs');
+const path = require('path');
+const utility = require('../services/util');
+let userId = '';
+
 
 const candidateDataTransaction = {
     candidateGetAll: async function (req, res) {
@@ -29,7 +31,6 @@ const candidateDataTransaction = {
     },
     searchCandidate: async function (req, res) {
         const searchText = req.body.searchText;
-        console.log('search text', this.searchText);
         candidate.find({ skills: { $regex: searchText } }, (err, data) => {
             if (err) {
                 throw err
@@ -39,7 +40,7 @@ const candidateDataTransaction = {
             })
         })
     },
-     findLastSavedCandidate: async function(lastSavedCandidateId, awsUrl, res) {
+    findLastSavedCandidate: async function (lastSavedCandidateId, awsUrl, res) {
         let query = { candidateId: lastSavedCandidateId };
         candidate.findOneAndUpdate(query, { url: awsUrl }, { new: true }, (err, data) => {
             if (err) {
@@ -50,6 +51,39 @@ const candidateDataTransaction = {
                 candidateInfoSaved: data
             })
         })
+    },
+    downloadFile: async function (req, res) {
+        filename = req.params.file;
+        let fileLocation = path.join('../resumes', filename);
+        res.download(fileLocation, filename, (err)=>{
+            if(err){
+                throw err;
+            }
+        });
+    },
+    saveNewCandidate: async function(req,res){
+        userId = 'cand' + '-' + Math.floor(1000 + Math.random() * 9000);
+        lastSavedCandidateId = userId;
+        let candidateSchema = new candidate({
+            candidateId: userId,
+            fName: req.body.fName,
+            lName: req.body.lName,
+            email: req.body.email,
+            phoneNo: req.body.phoneNo,
+            skills: req.body.skills,
+            cCtc: req.body.cCtc,
+            eCtc: req.body.eCtc,
+            filename: ''
+        });
+        candidateSchema.save((err) => {
+            if (err) {
+                throw err
+            }
+            utility.setLastSavedUserId(userId);
+            res.json({
+                candidateInfoSaved: candidateSchema
+            })
+        });
     }
 }
 

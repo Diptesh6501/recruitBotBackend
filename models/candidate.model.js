@@ -7,9 +7,9 @@ const candidateSchema = new Schema({
     email: String,
     phoneNo: String,
     skills: [String],
-    cCtc: Number,
-    eCtc: Number,
-    url: String
+    cCtc: String,
+    eCtc: String,
+    filename: String
 });
 
 module.exports = mongoose.model('candidate', candidateSchema);
