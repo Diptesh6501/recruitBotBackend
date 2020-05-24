@@ -9,6 +9,7 @@ const candidateSchema = new Schema({
     skills: [String],
     cCtc: String,
     eCtc: String,
+    currentLocation: String,
     filename: String
 });
 

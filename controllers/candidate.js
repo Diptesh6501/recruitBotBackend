@@ -73,6 +73,7 @@ const candidateDataTransaction = {
             skills: req.body.skills,
             cCtc: req.body.cCtc,
             eCtc: req.body.eCtc,
+            currentLocation: req.body.currentLocation,
             filename: ''
         });
         candidateSchema.save((err) => {

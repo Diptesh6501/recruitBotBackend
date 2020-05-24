@@ -70,7 +70,6 @@ function findLastSavedCandidate(file) {
 
 // get pdf
 app.get('/pdf', (req, res) => {
-    console.log(`../resumes/${fileToBeServed}`);
     let filePath = path.join(__dirname, '../resumes/', fileToBeServed);
     res.sendFile(filePath);
 });
