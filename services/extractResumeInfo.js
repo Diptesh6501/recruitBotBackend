@@ -5,7 +5,7 @@ const extractPhoneNumber = require('./extractPhoneNumber');
 function parseResume(fileName) {
     let parsedInfo = {};
     let parsedDocument;
-    let fullPath = './uploads/' + fileName;
+    let fullPath = '.././resumes/' + fileName;
     let availableSkills = ['angular', 'react', 'java', 'qa', 'node',
         'c#', 'asp.net', 'vb', 'visual basic', 'spring boot', 'mqsql', 'mongo db', ];
     let toolsTextPattern = ['jenkins', 'ci/cd', 'maven', 'circleci', 'aws', 'selenium'];
