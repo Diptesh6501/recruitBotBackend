@@ -31,7 +31,7 @@ const candidateDataTransaction = {
     },
     searchCandidate: async function (req, res) {
         const searchText = req.body.searchText;
-        candidate.find({ skills: { $regex: searchText } }, (err, data) => {
+        candidate.find({skills: { $regex: searchText, $options: "i" }}, (err, data) => {
             if (err) {
                 throw err
             }
@@ -85,6 +85,11 @@ const candidateDataTransaction = {
                 candidateInfoSaved: candidateSchema
             })
         });
+    },
+    viewFile: function(req,res){
+       let fileName = req.query.fileName;
+       let filePath = path.join(__dirname , '../../resumes' , fileName)
+       res.sendFile(filePath);
     }
 }
 

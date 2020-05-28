@@ -7,5 +7,6 @@ routes.get('/getCandidateById', candidateDataTransaction.candidateById);
 routes.post('/searchCandidates', candidateDataTransaction.searchCandidate);
 routes.get('/download/:file', candidateDataTransaction.downloadFile);
 routes.post('/saveCandidateInfo', candidateDataTransaction.saveNewCandidate);
+routes.get('/viewFile', candidateDataTransaction.viewFile);
 
 module.exports = routes;
