@@ -1,6 +1,7 @@
 const candidate = require('../models/candidate.model');
 const path = require('path');
 const utility = require('../services/util');
+const fs = require('fs');
 let userId = '';
 
 
@@ -90,6 +91,54 @@ const candidateDataTransaction = {
        let fileName = req.query.fileName;
        let filePath = path.join(__dirname , '../../resumes' , fileName)
        res.sendFile(filePath);
+    },
+    updateCandidate: function(req,res){
+        let query = { candidateId: req.body.candidateId };
+        candidate.findOneAndUpdate(query,
+             { 
+                fName: req.body.fName,
+                lName: req.body.lName,
+                email: req.body.email,
+                phoneNo: req.body.phoneNo,
+                skills: req.body.skills,
+                cCtc: req.body.cCtc,
+                eCtc: req.body.eCtc,
+                currentLocation: req.body.currentLocation
+              }, { new: true }, (err, data) => {
+            if (err) {
+                throw err
+            }
+            res.json({
+                updated: true,
+                updateCandidate: data
+            });
+        })
+    },
+    deleteCandidate: function(req,res) {
+            let filename = req.params.filename;
+            console.log('file nae is', filename);
+            let filePath = path.join( __dirname , '../../resumes' , filename)
+            console.log('filename exsists', fs.existsSync(filePath));
+            console.log('file path is', filePath);
+            if (fs.existsSync(filePath)) {
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                    console.error(err)
+                    return
+                    } else {
+                        candidate.deleteOne({ candidateId: req.params.candidateId }, function (err,data) {
+                            if(err){
+                                throw err;
+                            }
+                            res.json({
+                                deleted: 'sucessfully',
+                                delete: data
+                            })
+                        });
+                    }
+                    })
+            
+            }
     }
 }
 

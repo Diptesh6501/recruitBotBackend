@@ -8,12 +8,14 @@ const parseResume = require('./services/extractResumeInfo');
 const candidate = require('./models/candidate.model');
 const routes = require('./routes/index');
 const path = require('path');
+var cors = require('cors');
 const utility = require('./services/util');
 let fileToBeServed;
 let originalFileName;
 
 connectMongo();
 // parse application/x-www-form-urlencoded
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 
@@ -21,11 +23,6 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // parse application/json
 app.use(bodyParser.json())
 
-app.use(function (req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
-});
 
 app.use(routes);
 

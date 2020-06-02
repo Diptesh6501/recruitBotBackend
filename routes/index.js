@@ -8,5 +8,7 @@ routes.post('/searchCandidates', candidateDataTransaction.searchCandidate);
 routes.get('/download/:file', candidateDataTransaction.downloadFile);
 routes.post('/saveCandidateInfo', candidateDataTransaction.saveNewCandidate);
 routes.get('/viewFile', candidateDataTransaction.viewFile);
+routes.put('/updateCandidate', candidateDataTransaction.updateCandidate);
+routes.delete('/deleteCandidate/:candidateId/:filename', candidateDataTransaction.deleteCandidate);
 
 module.exports = routes;
