@@ -2,6 +2,8 @@ const candidate = require('../models/candidate.model');
 const path = require('path');
 const utility = require('../services/util');
 const fs = require('fs');
+const async = require('async');
+
 let userId = '';
 
 
@@ -32,7 +34,7 @@ const candidateDataTransaction = {
     },
     searchCandidate: async function (req, res) {
         const searchText = req.body.searchText;
-        candidate.find({skills: { $regex: searchText, $options: "i" }}, (err, data) => {
+        candidate.find({ skills: { $regex: searchText, $options: "i" } }, (err, data) => {
             if (err) {
                 throw err
             }
@@ -56,13 +58,13 @@ const candidateDataTransaction = {
     downloadFile: async function (req, res) {
         filename = req.params.file;
         let fileLocation = path.join('../resumes', filename);
-        res.download(fileLocation, filename, (err)=>{
-            if(err){
+        res.download(fileLocation, filename, (err) => {
+            if (err) {
                 throw err;
             }
         });
     },
-    saveNewCandidate: async function(req,res){
+    saveNewCandidate: async function (req, res) {
         userId = 'cand' + '-' + Math.floor(1000 + Math.random() * 9000);
         lastSavedCandidateId = userId;
         let candidateSchema = new candidate({
@@ -87,15 +89,15 @@ const candidateDataTransaction = {
             })
         });
     },
-    viewFile: function(req,res){
-       let fileName = req.query.fileName;
-       let filePath = path.join(__dirname , '../../resumes' , fileName)
-       res.sendFile(filePath);
+    viewFile: function (req, res) {
+        let fileName = req.query.fileName;
+        let filePath = path.join(__dirname, '../../resumes', fileName)
+        res.sendFile(filePath);
     },
-    updateCandidate: function(req,res){
+    updateCandidate: function (req, res) {
         let query = { candidateId: req.body.candidateId };
         candidate.findOneAndUpdate(query,
-             { 
+            {
                 fName: req.body.fName,
                 lName: req.body.lName,
                 email: req.body.email,
@@ -104,42 +106,103 @@ const candidateDataTransaction = {
                 cCtc: req.body.cCtc,
                 eCtc: req.body.eCtc,
                 currentLocation: req.body.currentLocation
-              }, { new: true }, (err, data) => {
-            if (err) {
-                throw err
-            }
-            res.json({
-                updated: true,
-                updateCandidate: data
-            });
-        })
+            }, { new: true }, (err, data) => {
+                if (err) {
+                    throw err
+                }
+                res.json({
+                    updated: true,
+                    updateCandidate: data
+                });
+            })
     },
-    deleteCandidate: function(req,res) {
-            let filename = req.params.filename;
-            console.log('file nae is', filename);
-            let filePath = path.join( __dirname , '../../resumes' , filename)
-            console.log('filename exsists', fs.existsSync(filePath));
-            console.log('file path is', filePath);
-            if (fs.existsSync(filePath)) {
-                fs.unlink(filePath, (err) => {
-                    if (err) {
+    deleteCandidate: function (req, res) {
+        let filename = req.params.filename;
+        let filePath = path.join(__dirname, '../../resumes', filename)
+        console.log('filename exsists', fs.existsSync(filePath));
+        console.log('file path is', filePath);
+        if (fs.existsSync(filePath)) {
+            fs.unlink(filePath, (err) => {
+                if (err) {
                     console.error(err)
                     return
-                    } else {
-                        candidate.deleteOne({ candidateId: req.params.candidateId }, function (err,data) {
-                            if(err){
-                                throw err;
-                            }
-                            res.json({
-                                deleted: 'sucessfully',
-                                delete: data
-                            })
-                        });
-                    }
+                } else {
+                    candidate.deleteOne({ candidateId: req.params.candidateId }, function (err, data) {
+                        if (err) {
+                            throw err;
+                        }
+                        res.json({
+                            deleted: 'sucessfully',
+                            delete: data
+                        })
+                    });
+                }
+            })
+
+        }
+    },
+    advancedSearch: function (req, res) {
+        let searchResults;
+        console.log('req', req.body);
+        async.waterfall([
+            function searchName(done) {
+                if (req.body.location && !req.body.ctc) {
+                    candidate.find({ currentLocation: { $regex: req.body.location, $options: "i" } }, (err, data) => {
+                        if (err) {
+                            throw err
+                        }
+                        searchResults = data;
+                        done(null, data);
                     })
-            
+                } else {
+                    done(null, '');
+                }
+            },
+            function searchEmail(step1Result, done) {
+                if (req.body.ctc && !req.body.location) {
+                    candidate.find({ cCtc: { $regex: req.body.ctc, $options: "i" } }, (err, data) => {
+                        if (err) {
+                            throw err
+                        }
+                        if (searchResults != null || searchResults != undefined) {
+                            searchResults.concat(data)
+                        } else {
+                            searchResults = data;
+                        }
+                        done(null, data);
+
+                    })
+                } else {
+                    done(null, '');
+                }
+            },
+            function searchPhoneNo(step2Result, done) {
+                if (req.body.ctc && req.body.location) {
+                    candidate.find({
+                        cCtc: req.body.ctc,
+                        currentLocation: { $regex: req.body.location, $options: "i" }
+                    }, (err, data) => {
+                        if (err) {
+                            throw err;
+                        }
+                        searchResults = data;
+                        done(null);
+                    });
+                } else {
+                    done(null);
+                }
             }
-    }
+        ],
+            function (err) {
+                if (err) {
+                    throw new Error(err);
+                } else {
+                    res.json({
+                        searchResult: searchResults
+                    })
+                }
+            });
+    },
 }
 
 module.exports = candidateDataTransaction;
