@@ -11,5 +11,6 @@ routes.get('/viewFile', candidateDataTransaction.viewFile);
 routes.put('/updateCandidate', candidateDataTransaction.updateCandidate);
 routes.delete('/deleteCandidate/:candidateId/:filename', candidateDataTransaction.deleteCandidate);
 routes.post('/advSearch', candidateDataTransaction.advancedSearch);
+routes.post('/getAllSkills', candidateDataTransaction.fetchAllSkills);
 
 module.exports = routes;
