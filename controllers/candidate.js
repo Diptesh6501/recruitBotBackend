@@ -3,6 +3,8 @@ const path = require('path');
 const utility = require('../services/util');
 const fs = require('fs');
 const async = require('async');
+const getCandidateByKeyword = require('../services/getCandidateByKeyword');
+
 
 let userId = '';
 
@@ -37,10 +39,29 @@ const candidateDataTransaction = {
         candidate.find({ skills: { $regex: searchText, $options: "i" } }, (err, data) => {
             if (err) {
                 throw err
+            } else if (Boolean(data.length)) {
+                res.json({
+                    status: true,
+                    candidateDetail: data
+                })
+            } else if (!Boolean(data.length)) {
+                let candidateData = [];
+                let directoryPath = path.join('../resumes');
+                getCandidateByKeyword(searchText).then((data) => {
+                    console.log('data here in candidate.js', data);
+                    if (data != undefined) {
+                        res.json({
+                            status: true,
+                            candidateDetail: data
+                        })
+                    } else if(data === undefined) {
+                        res.json({
+                            status: false,
+                            candidateDetail: 'No candidate was found'
+                        })
+                    }
+                })
             }
-            res.json({
-                candidateDetail: data
-            })
         })
     },
     findLastSavedCandidate: async function (lastSavedCandidateId, awsUrl, res) {
