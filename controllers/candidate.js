@@ -1,8 +1,6 @@
 const candidate = require('../models/candidate.model');
-const KeywordModel = require('../models/keyword.model');
 const path = require('path');
 const utility = require('../services/util');
-const modelUtility = require('../services/modelUtil');
 const fs = require('fs');
 const async = require('async');
 const getCandidateByKeyword = require('../services/getCandidateByKeyword');
@@ -36,21 +34,9 @@ const candidateDataTransaction = {
             }
         })
     },
-    fetchAllSkills: function (req, res) {
-        const keyword = req.body.keyword;
-        KeywordModel.find({ name: new RegExp(`^${keyword}`, 'i'), type: 'skill' }).sort({ count: -1 }).exec((err, data) => {
-            if (err) {
-                throw err;
-            }
-
-            const keywords = data.map(item => item.name);
-
-            res.json({ keywords });
-        });
-    },
     searchCandidate: async function (req, res) {
         const searchText = req.body.searchText;
-        candidate.find({ skills: { $in: [searchText] } }, (err, data) => {
+        candidate.find({ skills: { $regex: searchText, $options: "i" } }, (err, data) => {
             if (err) {
                 throw err;
             } else if (Boolean(data.length)) {
@@ -114,12 +100,11 @@ const candidateDataTransaction = {
             currentLocation: req.body.currentLocation,
             filename: ''
         });
-        candidateSchema.save((err, doc) => {
+        candidateSchema.save((err) => {
             if (err) {
                 throw err
             }
 
-            modelUtility.findAndSaveSkillKeywords(doc.skills);
             utility.setLastSavedUserId(userId);
             res.json({
                 candidateInfoSaved: candidateSchema
