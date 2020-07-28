@@ -36,7 +36,7 @@ const candidateDataTransaction = {
     },
     searchCandidate: async function (req, res) {
         const searchText = req.body.searchText;
-        candidate.find({ skills: { $regex: searchText, $options: "i" } }, (err, data) => {
+        candidate.find({ skills: { $in: [new RegExp(searchText, 'i')] } }, (err, data) => {
             if (err) {
                 throw err;
             } else if (Boolean(data.length)) {
