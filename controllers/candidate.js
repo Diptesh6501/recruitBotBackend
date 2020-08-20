@@ -140,8 +140,6 @@ const candidateDataTransaction = {
     deleteCandidate: function (req, res) {
         let filename = req.params.filename;
         let filePath = path.join(__dirname, '../../resumes', filename)
-        console.log('filename exsists', fs.existsSync(filePath));
-        console.log('file path is', filePath);
         if (fs.existsSync(filePath)) {
             fs.unlink(filePath, (err) => {
                 if (err) {

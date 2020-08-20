@@ -10,7 +10,8 @@ const candidateSchema = new Schema({
     cCtc: String,
     eCtc: String,
     currentLocation: String,
-    filename: String
+    filename: String,
+    resumeTxt: String
 });
 
 module.exports = mongoose.model('candidate', candidateSchema);
