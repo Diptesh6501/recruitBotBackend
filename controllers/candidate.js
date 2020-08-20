@@ -36,9 +36,9 @@ const candidateDataTransaction = {
     },
     searchCandidate: async function (req, res) {
         const searchText = req.body.searchText;
-        candidate.find({ skills: { $regex: searchText, $options: "i" } }, (err, data) => {
+        candidate.find({ skills: { $in: [new RegExp(searchText, 'i')] } }, (err, data) => {
             if (err) {
-                throw err
+                throw err;
             } else if (Boolean(data.length)) {
                 res.json({
                     status: true,
@@ -54,7 +54,7 @@ const candidateDataTransaction = {
                             status: true,
                             candidateDetail: data
                         })
-                    } else if(data === undefined) {
+                    } else if (data === undefined) {
                         res.json({
                             status: false,
                             candidateDetail: 'No candidate was found'
@@ -104,6 +104,7 @@ const candidateDataTransaction = {
             if (err) {
                 throw err
             }
+
             utility.setLastSavedUserId(userId);
             res.json({
                 candidateInfoSaved: candidateSchema
