@@ -3,8 +3,7 @@ const path = require('path');
 const utility = require('../services/util');
 const fs = require('fs');
 const async = require('async');
-const getCandidateByKeyword = require('../services/getCandidateByKeyword');
-
+const getKeyWordInResume = require('../services/getKeyWordInResume');
 
 let userId = '';
 
@@ -35,7 +34,7 @@ const candidateDataTransaction = {
         })
     },
     searchCandidate: async function (req, res) {
-        const searchText = req.body.searchText;
+        const searchText = req.body.textToSearch;
         candidate.find({ skills: { $in: [new RegExp(searchText, 'i')] } }, (err, data) => {
             if (err) {
                 throw err;
@@ -45,32 +44,35 @@ const candidateDataTransaction = {
                     candidateDetail: data
                 })
             } else if (!Boolean(data.length)) {
-                let candidateData = [];
-                let directoryPath = path.join('../resumes');
-                getCandidateByKeyword(searchText).then((data) => {
-                    console.log('data here in candidate.js', data);
-                    if (data != undefined) {
+                candidate.find({}, async (err, data) => {
+                    if (err) {
+                        throw err
+                    }
+                    getKeyWordInResume(data, searchText).then((data) => {
+                        if(data && data.length) {
                         res.json({
                             status: true,
                             candidateDetail: data
                         })
-                    } else if (data === undefined) {
+                    }
+                    })
+                    .catch((err) => {
                         res.json({
                             status: false,
-                            candidateDetail: 'No candidate was found'
+                            candidateDetail: [] 
                         })
-                    }
+                    })
                 })
+
             }
         })
     },
-    findLastSavedCandidate: async function (lastSavedCandidateId, awsUrl, res) {
+    findLastSavedCandidate: async function (lastSavedCandidateId, awsUrl, res , resumeAsText) {
         let query = { candidateId: lastSavedCandidateId };
-        candidate.findOneAndUpdate(query, { url: awsUrl }, { new: true }, (err, data) => {
+        candidate.findOneAndUpdate(query, { url: awsUrl , resumeTxt: resumeAsText}, { new: true }, (err, data) => {
             if (err) {
                 throw err
             }
-            // return data;
             res.json({
                 candidateInfoSaved: data
             })
@@ -86,6 +88,7 @@ const candidateDataTransaction = {
         });
     },
     saveNewCandidate: async function (req, res) {
+        utility.setFileName(req.body.fileName);
         userId = 'cand' + '-' + Math.floor(1000 + Math.random() * 9000);
         lastSavedCandidateId = userId;
         let candidateSchema = new candidate({

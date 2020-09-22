@@ -1,4 +1,6 @@
 let  lastSavedUserId= '';
+let  resumeText = '';
+let  fileName = '';
 const utility = {
      validatePhoneNumber:  async function(number){
           if(number.length >= 2){
@@ -13,6 +15,18 @@ const utility = {
     },
     getLastSavedUserId: function(){
         return  lastSavedUserId;
+    },
+    setresumeAsText(text){
+        this.resumeText = text;
+    },
+    getresumeAsText(){
+        return this.resumeText;
+    },
+    setFileName(fileName){
+        this.fileName = fileName;
+    },
+    getFileName(){
+        return this.fileName;
     }
 }
 

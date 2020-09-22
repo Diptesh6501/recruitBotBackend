@@ -10,6 +10,7 @@ const routes = require('./routes/index');
 const path = require('path');
 var cors = require('cors');
 const utility = require('./services/util');
+const getTextFromPdf = require('./services/readPdfToText');
 let fileToBeServed;
 let originalFileName;
 
@@ -33,7 +34,7 @@ var storage = multer.diskStorage(
         filename: function (req, file, cb) {
             cb(null, file.originalname);
         }
-    }
+    },
 );
 
 var upload = multer({ storage: storage });
@@ -41,6 +42,9 @@ var upload = multer({ storage: storage });
 app.post('/parseResume', upload.single('file'), async (req, res) => {
     fileParsedPath = '../resumes/' + req.file.originalname;
     fileToBeServed = req.file.originalname;
+    getTextFromPdf(fileParsedPath).then((data) =>{
+        utility.setresumeAsText(data);
+    })
     parseResume(req.file.originalname).then((data) => {
         res.json({
             'parsedResumeInformation': JSON.stringify(data)
@@ -51,11 +55,11 @@ app.post('/parseResume', upload.single('file'), async (req, res) => {
 
 });
 
-function findLastSavedCandidate(file) {
+function findLastSavedCandidate(file, resumeAsText) {
     let lastSavedCandidateId = utility.getLastSavedUserId();
     return new Promise(function (resolve, reject) {
         let query = { candidateId: lastSavedCandidateId };
-        candidate.findOneAndUpdate(query, { filename: file }, { new: true }, (err, data) => {
+        candidate.findOneAndUpdate(query, { filename: file , resumeTxt: resumeAsText }, { new: true }, (err, data) => {
             if (err) {
                 reject(err)
             }
@@ -77,9 +81,16 @@ app.get('/', (req, res) => {
     )
 })
 
-app.post('/uploadAws', upload.single('file'), (req, res) => {
+app.post('/uploadAws', upload.single('file'), async (req, res) => {
+    let fileName = utility.getFileName();
+    let filePath = path.join(__dirname, '../resumes/', fileName);
+    let resumeAsText = '';
+    await getTextFromPdf(filePath).then((data) =>{
+        resumeAsText = data;
+    })
+
     originalFileName = req.file.originalname;
-    findLastSavedCandidate(originalFileName).then(data => {
+    findLastSavedCandidate(originalFileName , resumeAsText).then(data => {
         res.json({
             data: data
         })
