@@ -49,27 +49,27 @@ const candidateDataTransaction = {
                         throw err
                     }
                     getKeyWordInResume(data, searchText).then((data) => {
-                        if(data && data.length) {
-                        res.json({
-                            status: true,
-                            candidateDetail: data
-                        })
-                    }
+                        if (data && data.length) {
+                            res.json({
+                                status: true,
+                                candidateDetail: data
+                            })
+                        }
                     })
-                    .catch((err) => {
-                        res.json({
-                            status: false,
-                            candidateDetail: [] 
+                        .catch((err) => {
+                            res.json({
+                                status: false,
+                                candidateDetail: []
+                            })
                         })
-                    })
                 })
 
             }
         })
     },
-    findLastSavedCandidate: async function (lastSavedCandidateId, awsUrl, res , resumeAsText) {
+    findLastSavedCandidate: async function (lastSavedCandidateId, awsUrl, res, resumeAsText) {
         let query = { candidateId: lastSavedCandidateId };
-        candidate.findOneAndUpdate(query, { url: awsUrl , resumeTxt: resumeAsText}, { new: true }, (err, data) => {
+        candidate.findOneAndUpdate(query, { url: awsUrl, resumeTxt: resumeAsText }, { new: true }, (err, data) => {
             if (err) {
                 throw err
             }
@@ -166,7 +166,6 @@ const candidateDataTransaction = {
     },
     advancedSearch: function (req, res) {
         let searchResults;
-        console.log('req', req.body);
         async.waterfall([
             function searchName(done) {
                 if (req.body.location && !req.body.ctc) {
@@ -226,6 +225,65 @@ const candidateDataTransaction = {
                 }
             });
     },
+    keyWordSearch: function (req, res) {
+        let candidatesFoundAfterSearch = [];
+        async.waterfall([
+            function findAnyKeyWord(done) {
+                if (req.body.anykeywords) {
+                    candidate.find({ resumeTxt: { $regex: req.body.anykeywords, $options: "i" } }, (err, data) => {
+                        if (err) {
+                            throw err
+                        }
+                        candidatesFoundAfterSearch = data;
+                        done(null, data);
+                    })
+                } else {
+                    done(null, '');
+                }
+            },
+            function findAllKeywords(step1Result, done) {
+                if (req.body.allkeywords) {
+                    candidate.find({ resumeTxt: { $regex: req.body.allkeywords, $options: "i" } }, (err, data) => {
+                        if (err) {
+                            throw err
+                        }
+                        if (candidatesFoundAfterSearch != null || candidatesFoundAfterSearch != undefined) {
+                            candidatesFoundAfterSearch.concat(data)
+                        } else {
+                            candidatesFoundAfterSearch = data;
+                        }
+                        done(null, data);
+
+                    })
+                } else {
+                    done(null, '');
+                }
+            },
+            function findLocation(step2Result, done) {
+                if (req.body.location) {
+                    candidate.find({ currentLocation: req.body.location }, (err, data) => {
+                        if (err) {
+                            throw err;
+                        }
+                        candidatesFoundAfterSearch = data;
+                        done(null);
+                    });
+                } else {
+                    done(null);
+                }
+            }
+        ],
+            function (err) {
+                if (err) {
+                    throw new Error(err);
+                } else {
+                    console.log('candidate found after search', candidatesFoundAfterSearch);
+                    res.json({
+                        searchResult: candidatesFoundAfterSearch
+                    })
+                }
+            });
+    }
 }
 
 module.exports = candidateDataTransaction;
