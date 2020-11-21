@@ -277,7 +277,6 @@ const candidateDataTransaction = {
                 if (err) {
                     throw new Error(err);
                 } else {
-                    console.log('candidate found after search', candidatesFoundAfterSearch);
                     res.json({
                         searchResult: candidatesFoundAfterSearch
                     })
